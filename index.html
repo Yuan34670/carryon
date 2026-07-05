@@ -124,7 +124,7 @@
   .tm-val{cursor:pointer}
   .chip:active{background:var(--pine-soft)}
   .chip.minus{color:#B26B6B}
-  .datenav{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .datenav{display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:14px}
   .datenav button{font-size:12.5px;color:var(--muted);border:1px solid var(--line);
     padding:6px 12px;border-radius:20px;background:#FCFCFA}
   .datenav button:active{background:var(--pine-soft)}
@@ -185,6 +185,11 @@
   .phase:first-of-type{border-top:none}
   .phase.now{margin:0 -6px;padding:12px 6px;background:var(--pine-soft);border-radius:10px;border-top:none}
   .ph-idx{font-family:var(--serif);font-size:15px;color:var(--pine);width:20px;flex:none}
+  .proj-finish{font-size:12px;line-height:1.5;color:var(--muted)}
+  .proj-finish.ok{color:#3f9078}
+  .proj-finish.warn{color:#C58A3C}
+  .ph-when.done{color:#3f9078;font-weight:600}
+  .ph-book.done{color:#3f9078}
   .ph-reorder{display:flex;flex-direction:column;gap:3px;flex:none;padding-top:2px}
   .ph-mv{width:22px;height:20px;border-radius:6px;border:1px solid var(--line);background:#FCFCFA;
     color:var(--pink-deep);font-size:10px;line-height:1;display:grid;place-items:center;padding:0}
@@ -213,6 +218,7 @@
   .eng-prog:first-child{border-top:none;padding-top:2px}
   .epg-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
   .epg-name{font-weight:600;font-size:14px}
+  .epg-name.done{color:#3f9078}
   .epg-num{font-size:12.5px;color:var(--pink-deep);font-variant-numeric:tabular-nums;font-weight:600}
   .setting{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
   input[type=date]{font-family:var(--mono);border:1px solid var(--line);border-radius:9px;padding:6px 9px;color:var(--ink);background:#FCFCFA}
@@ -323,9 +329,9 @@
   .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
     max-width:82%;background:#fff;border:1.5px solid #FBE0E8;border-radius:18px;padding:12px 18px;
     box-shadow:0 8px 30px rgba(233,109,151,.2);z-index:80;opacity:0;transition:.35s cubic-bezier(.34,1.4,.64,1);
-    font-size:13.5px;color:#7a5c66;text-align:center;line-height:1.5;pointer-events:none}
+    font-size:12.5px;color:#7a5c66;text-align:center;line-height:1.5;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast .tt{font-family:var(--serif);color:var(--pink-deep);font-size:15px;margin-bottom:2px}
+  .toast .tt{font-family:var(--serif);color:var(--pink-deep);font-size:13.5px;margin-bottom:2px}
 
   /* unlock overlay */
   .overlay{position:fixed;inset:0;background:rgba(92,74,84,.32);backdrop-filter:blur(3px);
@@ -433,7 +439,8 @@
     <div class="card">
       <div class="sect-label">专业课第一轮 · 六本</div>
       <div class="rail" style="margin-top:2px"><span id="railFill" style="width:0"></span></div>
-      <div class="rail-cap" style="margin-bottom:12px"><span>第一轮通读 · 共 101 章</span><span id="railTxt">0 / 101 章</span></div>
+      <div class="rail-cap" style="margin-bottom:8px"><span>第一轮通读 · 共 101 章</span><span id="railTxt">0 / 101 章</span></div>
+      <div class="proj-finish" id="projFinish" style="margin-bottom:12px"></div>
       <div id="phaseList"></div>
     </div>
     <div class="card">
@@ -654,6 +661,15 @@ const HER = {
     // 8: '八月也稳稳的，厉害',
   },
   monthEndDefault: '又走过一个月啦，辛苦你了 ♡',   // ← 占位，等你写自己的
+  // "今天的歌" 前面的甜甜推荐语（每天随机一句，当天固定）
+  songIntro: [
+    '今天也想和你听这首 ♡',
+    '完成啦，这首送给你 ♡',
+    '听会儿歌，歇一歇 ♡',
+    '这首想放给你听 ♡',
+    '陪你听首歌吧 ♡',
+    '今天的你，配得上这首 ♡',
+  ],
   // 打卡全部完成时随机送一首"我们的歌"（不连音乐软件，只显示歌名+歌手）
   songs: [
     {t:'Afterglow', a:'Taylor Swift'},
@@ -729,11 +745,13 @@ function toast(title,text,ms){ const el=document.getElementById('toast');
   el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),ms||3200); }
 
 /* 解锁弹窗 */
-function showUnlock(title,text){
+function showUnlock(title,text,emoji){
+  document.getElementById('unlockMascot').textContent=emoji||'♡';
   document.getElementById('unlockTitle').textContent=title;
   document.getElementById('unlockText').textContent=text;
   document.getElementById('overlay').classList.add('show');
 }
+function celebrateDone(title,text){ showUnlock(title,text,'🎉'); confettiRain(); }
 const _bjNow=new Date(Date.now()+new Date().getTimezoneOffset()*60000+8*3600000); // 北京时间
 const today=new Date(_bjNow.getFullYear(),_bjNow.getMonth(),_bjNow.getDate()); const TK=key(today);
 let viewDate=new Date(today); const VK=()=>key(viewDate);
@@ -1118,6 +1136,15 @@ function renderPlan(){
   const rf=document.getElementById('railFill'), rt=document.getElementById('railTxt');
   if(rf) rf.style.width=(done/TOTAL_SEC*100)+'%';
   if(rt) rt.textContent=done+' / '+TOTAL_SEC+' 章';
+  const pf=document.getElementById('projFinish');
+  if(pf){ const remain=TOTAL_SEC-done;
+    if(remain<=0){ pf.textContent='🎉 第一轮六本已全部读完！'; pf.className='proj-finish ok'; }
+    else{ const PACE=2.3, daysLeft=Math.ceil(remain/PACE);
+      const f=new Date(today); f.setDate(f.getDate()+daysLeft);
+      const late=Math.round((f-parse('2026-08-31'))/86400000);
+      const dtxt=(f.getMonth()+1)+'月'+f.getDate()+'日';
+      pf.textContent='按每天约 2–3 章，预计 '+dtxt+' 读完第一轮'+(late<=0?'，8 月底前来得及 ✓':'，比 8 月底晚 '+late+' 天，可稍微提速');
+      pf.className='proj-finish'+(late<=0?' ok':' warn'); } }
   const pl=document.getElementById('phaseList'); pl.innerHTML='';
   const list=orderedPhases(); const last=list.length-1;
   list.forEach((p,i)=>{ const now=parse(p.start)<=today&&today<=parse(p.end);
@@ -1127,19 +1154,23 @@ function renderPlan(){
     el.innerHTML=`<div class="ph-reorder"><button class="ph-mv up" ${i===0?'disabled':''}>▲</button>
         <button class="ph-mv dn" ${i===last?'disabled':''}>▼</button></div>
       <div class="ph-body">
-      <div class="ph-book">${p.book}${bdone>=p.total?' ✓':''}</div>
+      <div class="ph-book${bdone>=p.total?' done':''}">${p.book}</div>
       <div class="ph-meta">${p.sub} · 共 ${p.total} 章</div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
         <input type="range" class="pslider" min="0" max="${p.total}" value="${bdone}">
         <button class="pstep" data-op="1">+</button></div>
       <div class="pnum">已读 ${bdone}/${p.total}${left>0?' · 剩 '+left:' · 全部完成'}</div>
     </div>
-      <div class="ph-when">${fmt(p.start)}<br>–${fmt(p.end)}</div>`;
+      <div class="ph-when${bdone>=p.total?' done':''}">${bdone>=p.total?'已读完':fmt(p.start)+'<br>–'+fmt(p.end)}</div>`;
     const sl=el.querySelector('.pslider'); sliderFill(sl);
     sl.oninput=()=>sliderFill(sl);
-    sl.onchange=async()=>{ await setProg(p.id,+sl.value); renderPlan(); };
+    sl.onchange=async()=>{ const was=progOf(p.id), nv=+sl.value; await setProg(p.id,nv);
+      if(was<p.total&&nv>=p.total) celebrateDone('读完一本啦 🎉','《'+p.book+'》第一轮读完，好厉害 ♡');
+      renderPlan(); };
     el.querySelectorAll('.pstep').forEach(b=>b.onclick=async(e)=>{ e.stopPropagation();
-      await setProg(p.id, progOf(p.id)+ +b.dataset.op); renderPlan(); });
+      const was=progOf(p.id), nv=was+ +b.dataset.op; await setProg(p.id, nv);
+      if(was<p.total&&nv>=p.total) celebrateDone('读完一本啦 🎉','《'+p.book+'》第一轮读完，好厉害 ♡');
+      renderPlan(); });
     el.querySelector('.ph-mv.up').onclick=()=>moveBook(i,-1);
     el.querySelector('.ph-mv.dn').onclick=()=>moveBook(i,1);
     pl.appendChild(el);
@@ -1152,7 +1183,7 @@ function renderEngProg(){
   const box=document.getElementById('engProgList'); if(!box) return; box.innerHTML='';
   ENG_ITEMS.forEach(it=>{ const done=engOf(it.key); const left=it.total-done;
     const el=document.createElement('div'); el.className='eng-prog';
-    el.innerHTML=`<div class="epg-top"><span class="epg-name">${it.name}${done>=it.total?' ✓':''}</span>
+    el.innerHTML=`<div class="epg-top"><span class="epg-name${done>=it.total?' done':''}">${it.name}</span>
       <span class="epg-num">${done}/${it.total} ${it.unit}</span></div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
         <input type="range" class="pslider" min="0" max="${it.total}" value="${done}">
@@ -1160,9 +1191,13 @@ function renderEngProg(){
       <div class="pnum">${left>0?'剩 '+left+' '+it.unit:'全部完成 🎉'}</div>`;
     const sl=el.querySelector('.pslider'); sliderFill(sl);
     sl.oninput=()=>sliderFill(sl);
-    sl.onchange=async()=>{ await setEng(it.key,+sl.value,it.total); renderEngProg(); };
+    sl.onchange=async()=>{ const was=engOf(it.key), nv=+sl.value; await setEng(it.key,nv,it.total);
+      if(was<it.total&&nv>=it.total) celebrateDone('完成一项 🎉', it.name+' 全部完成，太棒了 ♡');
+      renderEngProg(); };
     el.querySelectorAll('.pstep').forEach(b=>b.onclick=async()=>{
-      await setEng(it.key, engOf(it.key)+ +b.dataset.op, it.total); renderEngProg(); });
+      const was=engOf(it.key), nv=was+ +b.dataset.op; await setEng(it.key, nv, it.total);
+      if(was<it.total&&nv>=it.total) celebrateDone('完成一项 🎉', it.name+' 全部完成，太棒了 ♡');
+      renderEngProg(); });
     box.appendChild(el);
   });
 }
@@ -1225,18 +1260,26 @@ document.getElementById('restBtn').onclick=async()=>{ day.rest=!day.rest; await 
 
 /* ---------- streak（连续打卡）---------- */
 let STREAK=0;
-function isStudyDay(v){ if(!v) return false; if(v.rest) return true;
-  if(v.checks&&Object.values(v.checks).some(Boolean)) return true;
-  if(v.time&&Object.values(v.time).some(x=>x>0)) return true;
-  if(v.zykText||v.csjText||v.danciNew!=null||v.danciNum!=null) return true; return false; }
+/* 判断某天状态：'study'=真学习 / 'rest'=休息 / 'none'=空白 */
+function dayState(v){ if(!v) return 'none';
+  if(v.checks&&Object.values(v.checks).some(Boolean)) return 'study';
+  if(v.time&&Object.values(v.time).some(x=>x>0)) return 'study';
+  if(v.zykText||v.csjText||v.danciNew!=null||v.danciNum!=null) return 'study';
+  if(v.rest) return 'rest';
+  return 'none'; }
 function renderStreakChip(){ const el=document.getElementById('streakChip'); if(!el)return;
   if(STREAK<=0){ el.style.display='none'; return; }
-  el.style.display='inline-flex'; el.innerHTML=`🌱 已连续 <span class="s-num">${STREAK}</span> 天啦`; }
+  el.style.display='inline-flex'; el.innerHTML=`🌱 连续学习 <span class="s-num">${STREAK}</span> 天啦`; }
 async function refreshStreak(triggerUnlock){
-  const set=new Set();
-  for(const k of await store.list('day:')){ const v=await store.get(k); if(isStudyDay(v)) set.add(k.slice(4)); }
-  let n=0; const d=new Date(today); if(!set.has(TK)) d.setDate(d.getDate()-1);
-  while(set.has(key(d))){ n++; d.setDate(d.getDate()-1); }
+  const states={};
+  for(const k of await store.list('day:')){ states[k.slice(4)]=dayState(await store.get(k)); }
+  // 从今天（或今天还没动就从昨天）往前走：学习日 +1，休息日跳过不加，空白日停止
+  let n=0; const d=new Date(today);
+  if((states[TK]||'none')==='none') d.setDate(d.getDate()-1);
+  while(true){ const st=states[key(d)]||'none';
+    if(st==='study'){ n++; d.setDate(d.getDate()-1); }
+    else if(st==='rest'){ d.setDate(d.getDate()-1); }   // 休息：保住、但不+1
+    else break; }
   STREAK=n; renderStreakChip();
   if(triggerUnlock) await checkMilestone();
 }
@@ -1261,10 +1304,11 @@ function todaySummary(){
 function celebrateAllDone(){
   confettiRain();
   const cheer=pickLine(HER.cheer);
-  const s=pickLine(HER.songs,TK);   // 当天固定一首
+  const s=pickLine(HER.songs);   // 每次随机一首
   let body=todaySummary();
   if(cheer) body+='<br><span style="color:var(--pink-deep)">'+cheer+'</span>';
-  if(s) body+='<br><span style="color:var(--muted)">🎧 今天的歌 · '+s.t+' — '+s.a+'</span>';
+  if(s){ const intro=pickLine(HER.songIntro)||'今天的歌';
+    body+='<br><span style="color:var(--muted)">🎧 '+intro+'　'+s.t+' — '+s.a+'</span>'; }
   toast('今天全部完成 🎉', body, 6200);
 }
 
