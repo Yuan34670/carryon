@@ -143,6 +143,7 @@
   .btn{background:var(--pine);color:#fff;padding:10px 20px;border-radius:11px;font-size:14px;font-weight:600}
   .btn:active{opacity:.9}
   .btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+  .btn.ghost.danger{color:#C7566E;border-color:#F3C0CC;background:#FDEEF1}
   .saved-note{font-size:12.5px;color:var(--muted)}
   .hist-item{border-top:1px solid var(--line);padding:13px 0;cursor:pointer}
   .hist-item:active{opacity:.65}
@@ -392,6 +393,7 @@
       <textarea id="revText" placeholder="英语：单词… 长难句… 阅读…&#10;专业课：今天读了…&#10;不足：&#10;明日计划："></textarea>
       <div class="save-row">
         <button class="btn" id="revSave">保存复盘</button>
+        <button class="btn ghost" id="revClear">清空</button>
         <span class="saved-note" id="revNote"></span>
       </div>
     </div>
@@ -531,6 +533,8 @@ const store={
   async get(k){ const ls=_ls(); if(ls){ try{ const v=ls.getItem(k); return v==null?null:JSON.parse(v); }catch(e){} }
     return (k in _mem)?_mem[k]:null; },
   async set(k,v){ _mem[k]=v; const ls=_ls(); if(ls){ try{ ls.setItem(k,JSON.stringify(v)); }catch(e){} }
+    if(!SYNC.applying) SYNC.push(); },
+  async remove(k){ delete _mem[k]; const ls=_ls(); if(ls){ try{ ls.removeItem(k); }catch(e){} }
     if(!SYNC.applying) SYNC.push(); },
   async list(p){ const ls=_ls(); const out=new Set();
     if(ls){ try{ for(let i=0;i<ls.length;i++){ const key=ls.key(i); if(key&&key.startsWith(p)) out.add(key); } }catch(e){} }
@@ -1084,6 +1088,18 @@ document.getElementById('revSave').onclick=async()=>{
   const t=document.getElementById('revText').value;
   await store.set('review:'+VK(),{text:t});
   const n=document.getElementById('revNote'); n.textContent='已保存 ✓';
+  setTimeout(()=>n.textContent='',1800); renderReview();
+};
+let _revClearArmed=false, _revClearTimer=null;
+document.getElementById('revClear').onclick=async()=>{
+  const b=document.getElementById('revClear');
+  if(!_revClearArmed){ _revClearArmed=true; b.textContent='确认清空？'; b.classList.add('danger');
+    _revClearTimer=setTimeout(()=>{ _revClearArmed=false; b.textContent='清空'; b.classList.remove('danger'); },3000);
+    return; }
+  clearTimeout(_revClearTimer); _revClearArmed=false; b.textContent='清空'; b.classList.remove('danger');
+  document.getElementById('revText').value='';
+  await store.remove('review:'+VK());
+  const n=document.getElementById('revNote'); n.textContent='已清空';
   setTimeout(()=>n.textContent='',1800); renderReview();
 };
 
