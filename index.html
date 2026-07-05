@@ -143,6 +143,11 @@
   .btn{background:var(--pine);color:#fff;padding:10px 20px;border-radius:11px;font-size:14px;font-weight:600}
   .btn:active{opacity:.9}
   .btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+  .sect-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .clr-btn{font-size:11.5px;color:#C0AEB6;background:none;border:1px solid var(--line);
+    border-radius:20px;padding:3px 11px;line-height:1.4}
+  .clr-btn:active{background:#FBF3F5}
+  .clr-btn.danger{color:#C7566E;border-color:#F3C0CC;background:#FDEEF1}
   .btn.ghost.danger{color:#C7566E;border-color:#F3C0CC;background:#FDEEF1}
   .saved-note{font-size:12.5px;color:var(--muted)}
   .hist-item{border-top:1px solid var(--line);padding:13px 0;cursor:pointer}
@@ -369,13 +374,13 @@
     </div>
 
     <div class="card">
-      <div class="sect-label">今日任务</div>
+      <div class="sect-head"><span class="sect-label">今日任务</span><button class="clr-btn" id="clearTasks">清空</button></div>
       <div id="taskList"></div>
       <div id="addTask"></div>
     </div>
 
     <div class="card">
-      <div class="sect-label">今日计时</div>
+      <div class="sect-head"><span class="sect-label">今日计时</span><button class="clr-btn" id="clearTimers">清空</button></div>
       <div class="timers" id="timers"></div>
       <div class="day-total"><span>今日累计</span><b id="dayTotal">0.0h</b></div>
     </div>
@@ -1102,6 +1107,20 @@ document.getElementById('revClear').onclick=async()=>{
   const n=document.getElementById('revNote'); n.textContent='已清空';
   setTimeout(()=>n.textContent='',1800); renderReview();
 };
+
+/* ---------- 今日一键清空 ---------- */
+function armClear(btn,doClear){
+  if(btn._armed){ clearTimeout(btn._t); btn._armed=false; btn.textContent='清空'; btn.classList.remove('danger'); doClear(); return; }
+  btn._armed=true; btn.textContent='确认清空？'; btn.classList.add('danger');
+  btn._t=setTimeout(()=>{ btn._armed=false; btn.textContent='清空'; btn.classList.remove('danger'); },3000);
+}
+document.getElementById('clearTasks').onclick=function(){ armClear(this, async()=>{
+  day.checks={}; day.zykText=''; day.csjText=''; day.danciNew=null; day.danciOld=null;
+  day.custom=[]; day.celebrated=false; await saveDay(); renderToday();
+}); };
+document.getElementById('clearTimers').onclick=function(){ armClear(this, async()=>{
+  day.time={}; await saveDay(); renderToday();
+}); };
 
 /* ---------- stats ---------- */
 async function renderStats(){
