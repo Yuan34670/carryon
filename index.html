@@ -216,10 +216,11 @@
     border:2.5px solid #fff;box-shadow:0 1px 4px rgba(233,109,151,.4);cursor:grab}
   .eng-prog{padding:11px 0;border-top:1px solid var(--line)}
   .eng-prog:first-child{border-top:none;padding-top:2px}
-  .epg-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .epg-top{display:flex;align-items:baseline;margin-bottom:6px}
   .epg-name{font-weight:600;font-size:14px}
   .epg-name.done{color:#3f9078}
-  .epg-num{font-size:12.5px;color:var(--pink-deep);font-variant-numeric:tabular-nums;font-weight:600}
+  .epg-when{font-size:11px;color:var(--muted);margin-left:8px}
+  .epg-num{font-size:12.5px;color:var(--pink-deep);font-variant-numeric:tabular-nums;font-weight:600;margin-left:auto}
   .setting{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
   input[type=date]{font-family:var(--mono);border:1px solid var(--line);border-radius:9px;padding:6px 9px;color:var(--ink);background:#FCFCFA}
   .note{font-size:12.5px;color:var(--muted);line-height:1.55}
@@ -309,6 +310,8 @@
     background:var(--pine-soft);color:var(--pink-deep);border-radius:20px;padding:6px 13px;
     font-size:12.5px;font-weight:600}
   .streak-chip .s-num{font-family:var(--serif);font-size:15px}
+  .streak-info{margin-left:3px;font-size:12px;opacity:.55;cursor:pointer}
+  .streak-info:active{opacity:.9}
 
   /* confetti / fireworks */
   .confetti{position:fixed;top:-10px;pointer-events:none;z-index:70;border-radius:2px;
@@ -455,13 +458,13 @@
       </div>
       <div class="eng-block">
         <div class="eng-h">阅读 · 方法论</div>
-        <div class="note">7/6–7/13，一天 1 讲，共 8 讲。结合讲义，整理版笔记每周回看一次。</div>
+        <div class="note">7/7–7/14，一天 1 讲，共 8 讲。结合讲义，整理版笔记每周回看一次。</div>
       </div>
       <div class="eng-block">
         <div class="eng-h">阅读 · 真题</div>
         <div class="note">
-          7/14–7/20　04–09 年真题 8 篇练手（先做 → 看解析 → 没懂再看视频）<br>
-          7/21 起　10–23 英语二 56 篇，每天 1 篇，约 9/14 完<br>
+          7/15–7/22　04–09 年真题 8 篇练手（先做 → 看解析 → 没懂再看视频）<br>
+          7/23 起　10–23 英语二 56 篇，每天 1 篇，约 9/16 完<br>
           后期　罗汉班（做完至少到 20 年后再听）· 24–26 真题留最后模考
         </div>
       </div>
@@ -798,11 +801,11 @@ async function moveBook(idx,dir){ const ord=curOrder(); const j=idx+dir;
   BOOK_ORDER=ord; await saveOrder(); renderPlan(); }
 /* 英语进度：可数的四项，她自己 +/− 维护 */
 const ENG_ITEMS=[
-  {key:'csj',name:'长难句',total:66,unit:'句'},
-  {key:'method',name:'阅读方法论',total:8,unit:'讲'},
-  {key:'zt0409',name:'04–09 真题',total:8,unit:'篇'},
-  {key:'zt1023',name:'10–23 真题',total:56,unit:'篇'},
-  {key:'usbg',name:'美国文化背景',total:83,unit:'页'},
+  {key:'csj',name:'长难句',total:66,unit:'句',when:'每天 1 句'},
+  {key:'method',name:'阅读方法论',total:8,unit:'讲',when:'7/7–7/14'},
+  {key:'zt0409',name:'04–09 真题',total:8,unit:'篇',when:'7/15–7/22'},
+  {key:'zt1023',name:'10–23 真题',total:56,unit:'篇',when:'7/23–9/16'},
+  {key:'usbg',name:'美国文化背景',total:83,unit:'页',when:'灵活穿插'},
 ];
 const ENG_INIT={csj:1};   // 7/4 已完成长难句第 1 句
 let ENGPROG={};
@@ -848,12 +851,12 @@ const ZYK={ // 每日专业课（暂定）
 
 function readingTask(d){
   const dd=key(d);
-  if(parse(dd)<parse('2026-07-06')) return null;
-  const m=diffDays('2026-07-06',dd);          // 方法论从 7/6 起
-  if(m<8) return {main:'阅读方法论 第'+(m+1)+'讲',sub:'看视频 + 讲义，整理笔记'};   // 7/6–7/13
-  const b21=diffDays('2026-07-21',dd);
-  if(b21<0){ const n=m-8+1; return {main:'04–09 年真题 练手 第'+n+'篇',sub:'先做 → 看解析 → 没懂再看视频'}; } // 7/14–7/20
-  const idx=b21;                               // 英语二 56 篇从 7/21 起
+  if(parse(dd)<parse('2026-07-07')) return null;
+  const m=diffDays('2026-07-07',dd);          // 方法论从 7/7 起
+  if(m<8) return {main:'阅读方法论 第'+(m+1)+'讲',sub:'看视频 + 讲义，整理笔记'};   // 7/7–7/14
+  const b23=diffDays('2026-07-23',dd);
+  if(b23<0){ const n=m-8+1; return {main:'04–09 年真题 练手 第'+n+'篇',sub:'先做 → 看解析 → 没懂再看视频'}; } // 7/15–7/22
+  const idx=b23;                               // 英语二 56 篇从 7/23 起
   if(idx>=0&&idx<56){ const yr=2010+Math.floor(idx/4), t=idx%4+1; return {main:'英语二 '+yr+'年 Text'+t,sub:'第'+(idx+1)+'/56 篇 · 先做 → 看解析 → 看视频'}; }
   return null;
 }
@@ -1183,7 +1186,7 @@ function renderEngProg(){
   const box=document.getElementById('engProgList'); if(!box) return; box.innerHTML='';
   ENG_ITEMS.forEach(it=>{ const done=engOf(it.key); const left=it.total-done;
     const el=document.createElement('div'); el.className='eng-prog';
-    el.innerHTML=`<div class="epg-top"><span class="epg-name${done>=it.total?' done':''}">${it.name}</span>
+    el.innerHTML=`<div class="epg-top"><span class="epg-name${done>=it.total?' done':''}">${it.name}</span>${it.when?`<span class="epg-when">${it.when}</span>`:''}
       <span class="epg-num">${done}/${it.total} ${it.unit}</span></div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
         <input type="range" class="pslider" min="0" max="${it.total}" value="${done}">
@@ -1269,7 +1272,12 @@ function dayState(v){ if(!v) return 'none';
   return 'none'; }
 function renderStreakChip(){ const el=document.getElementById('streakChip'); if(!el)return;
   if(STREAK<=0){ el.style.display='none'; return; }
-  el.style.display='inline-flex'; el.innerHTML=`🌱 连续学习 <span class="s-num">${STREAK}</span> 天啦`; }
+  el.style.display='inline-flex';
+  el.innerHTML=`🌱 连续学习 <span class="s-num">${STREAK}</span> 天啦<span class="streak-info" id="streakInfo">ⓘ</span>`;
+  const info=document.getElementById('streakInfo');
+  if(info) info.onclick=(e)=>{ e.stopPropagation();
+    toast('🌱 连续学习', '学习一天就 +1 ～<br>点了「今天想歇一歇」的日期不会断、也不加天数；<br>只有某天既没学、也没休息，才会从头再来。', 3500); };
+}
 async function refreshStreak(triggerUnlock){
   const states={};
   for(const k of await store.list('day:')){ states[k.slice(4)]=dayState(await store.get(k)); }
