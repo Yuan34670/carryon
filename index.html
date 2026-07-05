@@ -33,7 +33,7 @@
   #dtxt{font-size:14px;color:var(--muted);margin-right:8px;letter-spacing:.02em}
   .count-side{text-align:right;font-size:12.5px;color:var(--muted)}
   .count-side b{display:block;font-family:var(--serif);font-size:20px;color:var(--ink);font-weight:600}
-  .rail{margin-top:16px;height:7px;border-radius:6px;background:var(--line);overflow:hidden}
+  .rail{margin-top:16px;height:10px;border-radius:7px;background:#fff;border:1.5px solid #F3B0C6;box-sizing:border-box;overflow:hidden}
   .rail>span{display:block;height:100%;background:linear-gradient(90deg,var(--pine),#3f9078);border-radius:6px;transition:width .5s ease}
   .rail-cap{display:flex;justify-content:space-between;margin-top:7px;font-size:11.5px;color:var(--muted)}
 
@@ -113,10 +113,15 @@
   .timer{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
   .timer:first-child{border-top:none}
   .tm-name{flex:1;font-size:14px}
+  .other-in{flex:1;min-width:0;border:none;border-bottom:1px dashed #E6C8D2;background:none;
+    font-family:var(--sans);font-size:14px;color:var(--ink);padding:1px 0 2px;outline:none}
+  .other-in:focus{border-bottom-color:var(--pink)}
+  .other-in::placeholder{color:#C7B2BA}
   .tm-val{font-family:var(--mono);font-size:14px;color:var(--pine);min-width:52px;text-align:right}
   .tm-btns{display:flex;gap:6px}
-  .chip{font-size:12px;padding:5px 8px;border-radius:9px;background:var(--paper);
-    border:1px solid var(--line);color:var(--muted);min-width:34px;text-align:center;font-family:var(--mono)}
+  .chip{font-size:13px;padding:7px 13px;border-radius:11px;background:var(--paper);
+    border:1px solid var(--line);color:var(--muted);min-width:44px;text-align:center;font-family:var(--mono)}
+  .tm-val{cursor:pointer}
   .chip:active{background:var(--pine-soft)}
   .chip.minus{color:#B26B6B}
   .datenav{display:flex;align-items:center;gap:8px;margin-top:12px}
@@ -155,9 +160,19 @@
   .bars{margin-top:6px}
   .bar-row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:12.5px}
   .bar-row .lab{width:52px;flex:none;color:var(--muted)}
-  .bar-track{flex:1;height:9px;background:var(--paper);border-radius:6px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:6px}
+  .bar-track{flex:1;height:9px;background:#F3E6EA;border-radius:6px;overflow:hidden}
+  .bar-fill{display:block;height:100%;border-radius:6px}
   .bar-row .v{width:44px;flex:none;text-align:right;font-family:var(--mono);color:var(--ink)}
+  .pie-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .pie-svg{width:120px;height:120px;flex:none}
+  .pie-svg circle{transition:stroke-dasharray .5s ease}
+  .pie-c-num{font-family:var(--serif);font-size:22px;fill:var(--ink)}
+  .pie-c-lab{font-size:9px;fill:var(--muted);letter-spacing:.1em}
+  .pie-legend{flex:1;min-width:150px;display:flex;flex-direction:column;gap:7px}
+  .pie-lg{display:flex;align-items:center;gap:8px;font-size:12.5px}
+  .pie-dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .pie-name{color:var(--ink)}
+  .pie-val{margin-left:auto;font-family:var(--mono);color:var(--muted);font-size:11.5px}
   .week{display:flex;align-items:flex-end;gap:7px;height:110px;margin:14px 2px 4px}
   .wk-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
   .wk-bar{width:100%;max-width:26px;background:var(--pine-soft);border-radius:5px 5px 0 0;position:relative;min-height:3px;transition:height .4s}
@@ -170,6 +185,11 @@
   .phase:first-of-type{border-top:none}
   .phase.now{margin:0 -6px;padding:12px 6px;background:var(--pine-soft);border-radius:10px;border-top:none}
   .ph-idx{font-family:var(--serif);font-size:15px;color:var(--pine);width:20px;flex:none}
+  .ph-reorder{display:flex;flex-direction:column;gap:3px;flex:none;padding-top:2px}
+  .ph-mv{width:22px;height:20px;border-radius:6px;border:1px solid var(--line);background:#FCFCFA;
+    color:var(--pink-deep);font-size:10px;line-height:1;display:grid;place-items:center;padding:0}
+  .ph-mv:disabled{opacity:.28}
+  .ph-mv:active:not(:disabled){background:var(--pine-soft)}
   .ph-body{flex:1}
   .ph-book{font-weight:600;font-size:14.5px}
   .ph-meta{font-size:12px;color:var(--muted);margin-top:2px}
@@ -178,9 +198,17 @@
   .mini-rail>span{display:block;height:100%;background:var(--pink);border-radius:4px}
   .prog-row{display:flex;align-items:center;gap:10px;margin-top:9px}
   .pstep{width:28px;height:28px;border-radius:9px;border:1.5px solid var(--line);background:#FCFCFA;
-    color:var(--pink-deep);font-size:17px;line-height:1;display:grid;place-items:center}
+    color:var(--pink-deep);font-size:18px;font-weight:500;line-height:1;
+    display:flex;align-items:center;justify-content:center;padding:0}
   .pstep:active{background:var(--pine-soft)}
   .pnum{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .pslider{-webkit-appearance:none;appearance:none;flex:1;height:12px;border-radius:7px;outline:none;
+    box-sizing:border-box;border:1.5px solid #F3B0C6;background:#fff;cursor:pointer}
+  .pslider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:19px;height:19px;border-radius:50%;
+    background:var(--pink);border:2.5px solid #fff;box-shadow:0 1px 4px rgba(233,109,151,.4);cursor:grab}
+  .pslider::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.1)}
+  .pslider::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--pink);
+    border:2.5px solid #fff;box-shadow:0 1px 4px rgba(233,109,151,.4);cursor:grab}
   .eng-prog{padding:11px 0;border-top:1px solid var(--line)}
   .eng-prog:first-child{border-top:none;padding-top:2px}
   .epg-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
@@ -192,6 +220,8 @@
   .soon{display:inline-block;font-size:10.5px;letter-spacing:.04em;color:var(--amber);
     background:var(--amber-soft);border-radius:20px;padding:2px 9px;vertical-align:middle;font-weight:600;text-transform:none}
   .soon-card{border-style:dashed;background:#FBFBF9;opacity:.9}
+  .sync-mini{text-align:center;color:#E4D9DE;font-size:13px;padding:14px 0 4px;cursor:pointer;user-select:none}
+  .sync-mini:active{color:#CBBAC2}
   .fld{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;font-size:14.5px;
     font-family:var(--sans);color:var(--ink);background:#FCFCFA;outline:none;margin-top:8px}
   .fld:focus{border-color:var(--pink)}
@@ -256,7 +286,7 @@
   .chip{border-radius:11px}
   nav button.on{color:var(--pink-deep)}
   nav{border-top-color:var(--line)}
-  .rail>span{background:linear-gradient(90deg,var(--pink),#FBB6CE)}
+  .rail>span{background:#F9BAD0}
   .count-big{color:var(--pink-deep)}
   .eng-h,.hist-date,.cal-mh,.kpi .n small{color:var(--pink-deep)}
   .tag.zyk{background:var(--pine-soft);color:var(--pink-deep)}
@@ -320,7 +350,7 @@
   <!-- TODAY -->
   <section class="view on" id="view-today">
     <div class="card hero-card">
-      <button class="rest-btn" id="restBtn">今天休息</button>
+      <button class="rest-btn" id="restBtn">今天想歇一歇</button>
       <div class="eyebrow" id="todayEye">今日</div>
       <div class="date-h" id="todayH">—</div>
       <div class="date-sub" id="todaySub"></div>
@@ -400,23 +430,6 @@
 
   <!-- PLAN -->
   <section class="view" id="view-plan">
-    <div class="card" id="syncCard">
-      <div class="sect-label">☁ 云同步</div>
-      <div id="syncedBox" style="display:none">
-        <div class="note">已登录 <b id="syncEmail"></b>，数据在两台设备间自动同步 ✓</div>
-        <button class="btn ghost" id="logoutBtn" style="margin-top:10px">退出登录</button>
-      </div>
-      <div id="loginBox">
-        <div class="note" style="margin-bottom:10px">用邮箱 + 密码登录，换手机 / 平板打开同一网址、登同一个账号，数据几秒同步。</div>
-        <input id="fbEmail" class="fld" type="email" inputmode="email" placeholder="邮箱" autocomplete="username">
-        <input id="fbPass" class="fld" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn" id="loginBtn">登录</button>
-          <button class="btn ghost" id="signupBtn">第一次 · 注册</button>
-        </div>
-        <div class="note" id="fbMsg" style="margin-top:8px"></div>
-      </div>
-    </div>
     <div class="card">
       <div class="sect-label">专业课第一轮 · 六本</div>
       <div class="rail" style="margin-top:2px"><span id="railFill" style="width:0"></span></div>
@@ -453,11 +466,28 @@
     </div>
     <div class="card soon-card">
       <div class="sect-label">政治　<span class="soon">9 月开始</span></div>
-      <div class="note">九月启动，待补充。到时把课程、刷题、背诵的安排排进来，也会同步进"今日任务"和日历配色。</div>
+      <div class="note">九月启动，待补充。</div>
     </div>
     <div class="card">
       <div class="sect-label">实务（7/20 起）</div>
       <div class="note">每周一题，计时完成，消息改写 → 评论 → 采访报道 循环；用周末或固定半天，不占通读时间。</div>
+    </div>
+
+    <div class="sync-mini" id="syncMini">☁</div>
+    <div class="card" id="syncCard" style="display:none">
+      <div id="syncedBox" style="display:none">
+        <div class="note">已同步 ✓</div>
+        <button class="btn ghost" id="logoutBtn" style="margin-top:10px">退出</button>
+      </div>
+      <div id="loginBox">
+        <input id="fbEmail" class="fld" type="email" inputmode="email" placeholder="邮箱" autocomplete="username">
+        <input id="fbPass" class="fld" type="password" placeholder="密码" autocomplete="current-password">
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn" id="loginBtn">登录</button>
+          <button class="btn ghost" id="signupBtn">注册</button>
+        </div>
+        <div class="note" id="fbMsg" style="margin-top:8px"></div>
+      </div>
     </div>
   </section>
 
@@ -506,7 +536,7 @@ const firebaseConfig = {
   messagingSenderId: "1052446251359",
   appId: "1:1052446251359:web:65a2bd87d939d6b512beea"
 };
-const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg'];
+const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg','otherName','bookOrder'];
 const SYNC={ user:null, db:null, unsub:null, applying:false, timer:null,
   ok(){ return typeof firebase!=='undefined' && this.db && this.user; },
   snapshot(){ const o={}; const ls=_ls();
@@ -541,15 +571,16 @@ function fbInit(){
     });
   }catch(e){ console.warn('Firebase 初始化失败',e); }
 }
-async function rerenderAll(){ await loadDay(); await loadProg(); await loadEngProg(); await renderHeader(); renderToday();
+async function rerenderAll(){ await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderHeader(); renderToday();
   await refreshStreak(false);
   const on=document.querySelector('.view.on'); if(on){ const v=on.id.replace('view-',''); if(views[v]&&v!=='today') views[v](); } }
 function renderSyncUI(){
   const login=document.getElementById('loginBox'), synced=document.getElementById('syncedBox');
   if(!login||!synced) return;
-  if(SYNC.user){ login.style.display='none'; synced.style.display='block';
-    document.getElementById('syncEmail').textContent=SYNC.user.email||''; }
+  if(SYNC.user){ login.style.display='none'; synced.style.display='block'; }
   else{ login.style.display='block'; synced.style.display='none'; }
+  const mini=document.getElementById('syncMini');
+  if(mini) mini.style.color=SYNC.user?'#EBD3DC':'#E4D9DE';  // 登录后极淡的粉，几乎看不出
 }
 
 /* ---------- date helpers ---------- */
@@ -585,12 +616,16 @@ const HER = {
   cheer: [
     '今天也要加油鸭～',
     '慢慢来，你已经很棒了',
-    '一节一节啃，就啃完啦',
     '累了就歇会儿，我等你',
     '你专注的样子最好看',
     '别急，时间够的',
     '又是踏实的一天呀',
     '相信你，一定可以的',
+    '相信相信的力量',
+    '你走的每一步都算数',
+    '稳住，你比自己想的更强',
+    '今天的努力，以后都会谢你',
+    '一步一步来，一定会到的',
   ],
   // 全部任务完成时随机说的话
   allDone: [
@@ -619,6 +654,23 @@ const HER = {
     // 8: '八月也稳稳的，厉害',
   },
   monthEndDefault: '又走过一个月啦，辛苦你了 ♡',   // ← 占位，等你写自己的
+  // 打卡全部完成时随机送一首"我们的歌"（不连音乐软件，只显示歌名+歌手）
+  songs: [
+    {t:'Afterglow', a:'Taylor Swift'},
+    {t:'Back to Me', a:'Vanotek'},
+    {t:'Bad Dreams', a:'Teddy Swims'},
+    {t:'Closer To You', a:'HENRY'},
+    {t:'Die For You', a:'The Weeknd'},
+    {t:'DAISIES', a:'Justin Bieber'},
+    {t:'HOT TO GO!', a:'Chappell Roan'},
+    {t:'Lover', a:'Taylor Swift'},
+    {t:'her', a:'JVKE'},
+    {t:'Peaches', a:'Justin Bieber'},
+    {t:'Soft Spot', a:'keshi'},
+    {t:'Unwritten', a:'Natasha Bedingfield'},
+    {t:'One Last Time', a:'Ariana Grande'},
+    {t:'Zoo', a:'Shakira'},
+  ],
 };
 
 /* 小家伙（软萌兔子）SVG */
@@ -672,9 +724,9 @@ function confettiRain(){
 
 /* 小提示条 */
 let toastT=null;
-function toast(title,text){ const el=document.getElementById('toast');
+function toast(title,text,ms){ const el=document.getElementById('toast');
   el.innerHTML=(title?`<div class="tt">${title}</div>`:'')+text;
-  el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),3200); }
+  el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),ms||3200); }
 
 /* 解锁弹窗 */
 function showUnlock(title,text){
@@ -682,34 +734,57 @@ function showUnlock(title,text){
   document.getElementById('unlockText').textContent=text;
   document.getElementById('overlay').classList.add('show');
 }
-const today=new Date(); const TK=key(today);
+const _bjNow=new Date(Date.now()+new Date().getTimezoneOffset()*60000+8*3600000); // 北京时间
+const today=new Date(_bjNow.getFullYear(),_bjNow.getMonth(),_bjNow.getDate()); const TK=key(today);
 let viewDate=new Date(today); const VK=()=>key(viewDate);
 
 /* ---------- schedule data ---------- */
-const CATS=[['zyk','专业课'],['danci','单词'],['csj','长难句'],['yuedu','阅读'],['shiwu','实务']];
-const CATCOLOR={zyk:'#2C6E5B',danci:'#4B6484',csj:'#7C6BA8',yuedu:'#C98A3C',shiwu:'#B2704B'};
+const CATS=[['zyk','专业课'],['danci','单词'],['csj','长难句'],['yuedu','阅读'],['zheng','政治'],['other','其他']];
+const CATCOLOR={zyk:'#F58CAF',danci:'#F4A95C',csj:'#B79BE4',yuedu:'#6FC9A6',zheng:'#F08A8A',other:'#A9B2BC'};
+let OTHER_NAME='';
+async function loadOther(){ OTHER_NAME=(await store.get('otherName'))||''; }
 
 const PHASES=[
-  {book:'传播学教程',sub:'郭庆光 · 第2版',start:'2026-07-01',end:'2026-07-07',total:15,color:'#2C6E5B'},
-  {book:'新闻学概论',sub:'李良荣 · 第7版',start:'2026-07-08',end:'2026-07-16',total:20,color:'#4B6484'},
-  {book:'网络传播概论',sub:'彭兰 · 第5版',start:'2026-07-17',end:'2026-07-21',total:10,color:'#7C6BA8'},
-  {book:'新闻采访与写作',sub:'马工程',start:'2026-07-22',end:'2026-07-29',total:19,color:'#C17A3A'},
-  {book:'当代新闻评论教程',sub:'丁法章 · 第5版',start:'2026-07-30',end:'2026-08-09',total:26,color:'#B0654A'},
-  {book:'广告学概论',sub:'马工程',start:'2026-08-10',end:'2026-08-14',total:11,color:'#5E8C6A'},
+  {id:'cbx',book:'传播学教程',sub:'郭庆光 · 第2版',total:15,days:7,color:'#2C6E5B'},
+  {id:'xgl',book:'新闻学概论',sub:'李良荣 · 第7版',total:20,days:9,color:'#4B6484'},
+  {id:'wlcb',book:'网络传播概论',sub:'彭兰 · 第5版',total:10,days:5,color:'#7C6BA8'},
+  {id:'cx',book:'新闻采访与写作',sub:'马工程',total:19,days:8,color:'#C17A3A'},
+  {id:'pl',book:'当代新闻评论教程',sub:'丁法章 · 第5版',total:26,days:11,color:'#B0654A'},
+  {id:'ggx',book:'广告学概论',sub:'马工程',total:11,days:5,color:'#5E8C6A'},
 ];
 const TOTAL_SEC=101;
-/* 实际进度：每本已读章数（她自己 +/− 维护）。传播学默认已读 10（还剩 5） */
-const INIT_PROG={0:10};
+const START_DATE='2026-07-01';
+const DEFAULT_ORDER=PHASES.map(p=>p.id);
+let BOOK_ORDER=[];
+async function loadOrder(){ BOOK_ORDER=await store.get('bookOrder')||[]; }
+async function saveOrder(){ await store.set('bookOrder',BOOK_ORDER); }
+function curOrder(){ const ord=(BOOK_ORDER&&BOOK_ORDER.length?BOOK_ORDER:DEFAULT_ORDER).filter(id=>PHASES.some(p=>p.id===id));
+  DEFAULT_ORDER.forEach(id=>{ if(!ord.includes(id)) ord.push(id); }); return ord; }
+/* 按当前顺序，从 7/1 起依次排出每本的起止日期 */
+function orderedPhases(){ let cur=parse(START_DATE);
+  return curOrder().map(id=>{ const p=PHASES.find(x=>x.id===id);
+    const s=new Date(cur), e=new Date(cur); e.setDate(e.getDate()+p.days-1);
+    cur=new Date(e); cur.setDate(cur.getDate()+1);
+    return Object.assign({},p,{start:key(s),end:key(e)}); }); }
+/* 实际进度：每本已读章数（按书 id 存，排序不影响） */
+const INIT_PROG={cbx:10};   // 传播学默认已读 10（还剩 5）
 let BOOKPROG={};
-async function loadProg(){ BOOKPROG=await store.get('bookProg')||{}; }
-function progOf(i){ return (BOOKPROG[i]!=null)?BOOKPROG[i]:(INIT_PROG[i]||0); }
-async function setProg(i,v){ BOOKPROG[i]=Math.max(0,Math.min(PHASES[i].total,v)); await store.set('bookProg',BOOKPROG); }
+async function loadProg(){ let bp=await store.get('bookProg')||{};
+  if(Object.keys(bp).some(k=>/^\d+$/.test(k))){ const mig={};   // 旧数据：数字下标 → id
+    Object.keys(bp).forEach(k=>{ if(/^\d+$/.test(k)&&PHASES[+k]) mig[PHASES[+k].id]=bp[k]; else mig[k]=bp[k]; }); bp=mig; }
+  BOOKPROG=bp; }
+function progOf(id){ return (BOOKPROG[id]!=null)?BOOKPROG[id]:(INIT_PROG[id]||0); }
+async function setProg(id,v){ const p=PHASES.find(x=>x.id===id); BOOKPROG[id]=Math.max(0,Math.min(p.total,v)); await store.set('bookProg',BOOKPROG); }
+async function moveBook(idx,dir){ const ord=curOrder(); const j=idx+dir;
+  if(j<0||j>=ord.length) return; const t=ord[idx]; ord[idx]=ord[j]; ord[j]=t;
+  BOOK_ORDER=ord; await saveOrder(); renderPlan(); }
 /* 英语进度：可数的四项，她自己 +/− 维护 */
 const ENG_ITEMS=[
   {key:'csj',name:'长难句',total:66,unit:'句'},
   {key:'method',name:'阅读方法论',total:8,unit:'讲'},
   {key:'zt0409',name:'04–09 真题',total:8,unit:'篇'},
-  {key:'zt1023',name:'英语二真题',total:56,unit:'篇'},
+  {key:'zt1023',name:'10–23 真题',total:56,unit:'篇'},
+  {key:'usbg',name:'美国文化背景',total:83,unit:'页'},
 ];
 const ENG_INIT={csj:1};   // 7/4 已完成长难句第 1 句
 let ENGPROG={};
@@ -825,12 +900,12 @@ function renderToday(){
   const isToday=VK()===TK;
   document.getElementById('todayEye').textContent=isToday?'今日':'补录';
   document.getElementById('todayH').textContent=(viewDate.getMonth()+1)+'月'+viewDate.getDate()+'日 星期'+WD[viewDate.getDay()];
-  const ph=PHASES.find(p=>parse(p.start)<=viewDate&&viewDate<=parse(p.end));
+  const ph=orderedPhases().find(p=>parse(p.start)<=viewDate&&viewDate<=parse(p.end));
   document.getElementById('todaySub').textContent=ph?('专业课本阶段：'+ph.book):'专业课第一轮';
   renderStreakChip();
   renderDateNav('todayNav');
   const rb=document.getElementById('restBtn'); rb.classList.toggle('active',!!day.rest);
-  rb.textContent=day.rest?'休息中 · 取消':(isToday?'今天休息':'标记休息');
+  rb.textContent=day.rest?'歇一歇中 · 取消':(isToday?'今天想歇一歇':'标记休息');
   document.getElementById('restHint').style.display=day.rest?'block':'none';
 
   const TAGN={eng:'英语',zyk:'专业课',zheng:'政治'};
@@ -902,19 +977,29 @@ function renderToday(){
   renderAddTask();
 
   const tm=document.getElementById('timers'); tm.innerHTML='';
+  const updTot=()=>{ const tot=CATS.reduce((s,[id])=>s+(day.time[id]||0),0);
+    document.getElementById('dayTotal').textContent=(tot/60).toFixed(1)+'h'; };
   CATS.forEach(([id,name])=>{
-    const min=day.time[id]||0;
     const row=document.createElement('div'); row.className='timer';
-    row.innerHTML=`<span class="tm-name">${name}</span>
-      <span class="tm-val">${fmtH(min)}</span>
-      <span class="tm-btns"><button class="chip minus" data-d="-15">−15</button>
-      <button class="chip" data-d="15">+15</button><button class="chip" data-d="30">+30</button><button class="chip" data-d="60">+60</button></span>`;
+    const nameCell = id==='other'
+      ? `<input class="other-in" placeholder="其他，可自己写" value="${(OTHER_NAME||'').replace(/"/g,'&quot;')}">`
+      : `<span class="tm-name">${name}</span>`;
+    row.innerHTML=`${nameCell}
+      <span class="tm-val" title="点一下归零">${fmtH(day.time[id]||0)}</span>
+      <span class="tm-btns"><button class="chip minus" data-d="-30">−30</button>
+      <button class="chip" data-d="30">+30</button><button class="chip" data-d="60">+1时</button></span>`;
+    if(id==='other'){ const ni=row.querySelector('.other-in');
+      ni.onclick=e=>e.stopPropagation();
+      const sv=async()=>{ OTHER_NAME=ni.value; await store.set('otherName',OTHER_NAME); };
+      ni.onchange=sv; ni.onblur=sv; }
+    const val=row.querySelector('.tm-val');
+    val.onclick=async()=>{ day.time[id]=0; await saveDay(); val.textContent=fmtH(0); updTot(); };
     row.querySelectorAll('.chip').forEach(b=>b.onclick=async()=>{
-      day.time[id]=Math.max(0,(day.time[id]||0)+parseInt(b.dataset.d)); await saveDay(); renderToday(); });
+      day.time[id]=Math.max(0,(day.time[id]||0)+parseInt(b.dataset.d)); await saveDay();
+      val.textContent=fmtH(day.time[id]); updTot(); });
     tm.appendChild(row);
   });
-  const tot=CATS.reduce((s,[id])=>s+(day.time[id]||0),0);
-  document.getElementById('dayTotal').textContent=(tot/60).toFixed(1)+'h';
+  updTot();
 }
 function fmtH(min){ if(min<60) return min+'m'; const h=Math.floor(min/60),m=min%60; return m?h+'h'+m:h+'h'; }
 
@@ -985,7 +1070,7 @@ document.getElementById('revSave').onclick=async()=>{
 async function renderStats(){
   const keys=await store.list('day:'); const days=[];
   for(const k of keys){ const v=await store.get(k); if(v) days.push({d:k.slice(4),...v}); }
-  let total=0; const cat={zyk:0,danci:0,csj:0,yuedu:0,shiwu:0}; const active=new Set();
+  let total=0; const cat={}; CATS.forEach(([id])=>cat[id]=0); const active=new Set();
   const mNow=today.getMonth();
   days.forEach(o=>{ let dt=0; CATS.forEach(([id])=>{const m=o.time&&o.time[id]||0;cat[id]+=m;dt+=m;});
     total+=dt; if(dt>0||o.rest){ if(parse(o.d).getMonth()===mNow&&parse(o.d).getFullYear()===today.getFullYear()) active.add(o.d);} });
@@ -1008,49 +1093,74 @@ async function renderStats(){
       <div class="wk-lab">${WD[a.d.getDay()]}</div>`; wk.appendChild(col); });
   document.getElementById('kAvg').innerHTML=(sum7/7/60).toFixed(1)+'<small>h</small>';
   // category bars
-  const cb=document.getElementById('catBars'); cb.innerHTML=''; const cmax=Math.max(1,...Object.values(cat));
-  CATS.forEach(([id,name])=>{ const m=cat[id]; const row=document.createElement('div'); row.className='bar-row';
-    row.innerHTML=`<span class="lab">${name}</span><span class="bar-track">
-      <span class="bar-fill" style="width:${m/cmax*100}%;background:${CATCOLOR[id]}"></span></span>
-      <span class="v">${(m/60).toFixed(1)}h</span>`; cb.appendChild(row); });
+  const cb=document.getElementById('catBars'); cb.innerHTML='';
+  const totMin=CATS.reduce((s,[id])=>s+(cat[id]||0),0);
+  if(totMin<=0){ cb.innerHTML='<div class="empty">还没有计时记录，去"今日"记一点吧。</div>'; return; }
+  const R=42, W=20, C=2*Math.PI*R; let off=0; let segs='';
+  CATS.forEach(([id])=>{ const m=cat[id]||0; if(m<=0) return; const len=m/totMin*C;
+    segs+=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${CATCOLOR[id]}" stroke-width="${W}"
+      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;
+    off+=len; });
+  const legend=CATS.map(([id,name])=>{ const m=cat[id]||0; const pct=Math.round(m/totMin*100);
+    const nm=id==='other'?(OTHER_NAME||'其他'):name;
+    return `<div class="pie-lg"><span class="pie-dot" style="background:${CATCOLOR[id]}"></span>
+      <span class="pie-name">${nm}</span><span class="pie-val">${(m/60).toFixed(1)}h · ${pct}%</span></div>`; }).join('');
+  cb.innerHTML=`<div class="pie-wrap">
+    <svg viewBox="0 0 120 120" class="pie-svg">${segs}
+      <text x="60" y="56" text-anchor="middle" class="pie-c-num">${(totMin/60).toFixed(1)}</text>
+      <text x="60" y="72" text-anchor="middle" class="pie-c-lab">小时</text></svg>
+    <div class="pie-legend">${legend}</div></div>`;
 }
 
 /* ---------- plan ---------- */
 function renderPlan(){
-  let done=0; PHASES.forEach((p,i)=>{ done+=Math.min(progOf(i),p.total); }); done=Math.min(TOTAL_SEC,done);
+  let done=0; PHASES.forEach(p=>{ done+=Math.min(progOf(p.id),p.total); }); done=Math.min(TOTAL_SEC,done);
   const rf=document.getElementById('railFill'), rt=document.getElementById('railTxt');
   if(rf) rf.style.width=(done/TOTAL_SEC*100)+'%';
   if(rt) rt.textContent=done+' / '+TOTAL_SEC+' 章';
   const pl=document.getElementById('phaseList'); pl.innerHTML='';
-  PHASES.forEach((p,i)=>{ const now=parse(p.start)<=today&&today<=parse(p.end);
+  const list=orderedPhases(); const last=list.length-1;
+  list.forEach((p,i)=>{ const now=parse(p.start)<=today&&today<=parse(p.end);
     const el=document.createElement('div'); el.className='phase'+(now?' now':'');
     const fmt=s=>{const[,m,d]=s.split('-');return +m+'/'+ +d;};
-    const done=progOf(i); const pct=Math.round(done/p.total*100); const left=p.total-done;
-    el.innerHTML=`<div class="ph-idx">${i+1}</div><div class="ph-body">
-      <div class="ph-book">${p.book}${done>=p.total?' ✓':''}</div>
+    const bdone=progOf(p.id); const left=p.total-bdone;
+    el.innerHTML=`<div class="ph-reorder"><button class="ph-mv up" ${i===0?'disabled':''}>▲</button>
+        <button class="ph-mv dn" ${i===last?'disabled':''}>▼</button></div>
+      <div class="ph-body">
+      <div class="ph-book">${p.book}${bdone>=p.total?' ✓':''}</div>
       <div class="ph-meta">${p.sub} · 共 ${p.total} 章</div>
-      <div class="mini-rail"><span style="width:${pct}%"></span></div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
-        <span class="pnum">已读 ${done}/${p.total}${left>0?'　剩 '+left:'　全部完成'}</span>
-        <button class="pstep" data-op="1">＋</button></div>
+        <input type="range" class="pslider" min="0" max="${p.total}" value="${bdone}">
+        <button class="pstep" data-op="1">+</button></div>
+      <div class="pnum">已读 ${bdone}/${p.total}${left>0?' · 剩 '+left:' · 全部完成'}</div>
     </div>
       <div class="ph-when">${fmt(p.start)}<br>–${fmt(p.end)}</div>`;
+    const sl=el.querySelector('.pslider'); sliderFill(sl);
+    sl.oninput=()=>sliderFill(sl);
+    sl.onchange=async()=>{ await setProg(p.id,+sl.value); renderPlan(); };
     el.querySelectorAll('.pstep').forEach(b=>b.onclick=async(e)=>{ e.stopPropagation();
-      await setProg(i, progOf(i)+ +b.dataset.op); renderPlan(); renderHeader(); });
+      await setProg(p.id, progOf(p.id)+ +b.dataset.op); renderPlan(); });
+    el.querySelector('.ph-mv.up').onclick=()=>moveBook(i,-1);
+    el.querySelector('.ph-mv.dn').onclick=()=>moveBook(i,1);
     pl.appendChild(el);
   });
   renderEngProg();
 }
+function sliderFill(sl){ const pct=(+sl.value/(+sl.max||1))*100;
+  sl.style.background=`linear-gradient(90deg,#F9BAD0 ${pct}%, #fff ${pct}%)`; }
 function renderEngProg(){
   const box=document.getElementById('engProgList'); if(!box) return; box.innerHTML='';
-  ENG_ITEMS.forEach(it=>{ const done=engOf(it.key); const pct=Math.round(done/it.total*100); const left=it.total-done;
+  ENG_ITEMS.forEach(it=>{ const done=engOf(it.key); const left=it.total-done;
     const el=document.createElement('div'); el.className='eng-prog';
     el.innerHTML=`<div class="epg-top"><span class="epg-name">${it.name}${done>=it.total?' ✓':''}</span>
       <span class="epg-num">${done}/${it.total} ${it.unit}</span></div>
-      <div class="mini-rail"><span style="width:${pct}%"></span></div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
-        <span class="pnum">${left>0?'剩 '+left+' '+it.unit:'全部完成 🎉'}</span>
-        <button class="pstep" data-op="1">＋</button></div>`;
+        <input type="range" class="pslider" min="0" max="${it.total}" value="${done}">
+        <button class="pstep" data-op="1">+</button></div>
+      <div class="pnum">${left>0?'剩 '+left+' '+it.unit:'全部完成 🎉'}</div>`;
+    const sl=el.querySelector('.pslider'); sliderFill(sl);
+    sl.oninput=()=>sliderFill(sl);
+    sl.onchange=async()=>{ await setEng(it.key,+sl.value,it.total); renderEngProg(); };
     el.querySelectorAll('.pstep').forEach(b=>b.onclick=async()=>{
       await setEng(it.key, engOf(it.key)+ +b.dataset.op, it.total); renderEngProg(); });
     box.appendChild(el);
@@ -1058,7 +1168,7 @@ function renderEngProg(){
 }
 
 /* ---------- calendar ---------- */
-function phaseOf(dstr){ const d=parse(dstr); return PHASES.find(p=>parse(p.start)<=d&&d<=parse(p.end)); }
+function phaseOf(dstr){ const d=parse(dstr); return orderedPhases().find(p=>parse(p.start)<=d&&d<=parse(p.end)); }
 async function renderCal(){
   const active=new Set(), rest=new Set(), reviews=new Set();
   for(const k of await store.list('day:')){ const v=await store.get(k); const dt=k.slice(4); if(!v)continue;
@@ -1071,7 +1181,7 @@ async function renderCal(){
   for(const k of await store.list('review:')){ const r=await store.get(k); if(r&&r.text&&r.text.trim()) reviews.add(k.slice(7)); }
 
   const wrap=document.getElementById('calWrap'); wrap.innerHTML='';
-  const months=[[2026,6],[2026,7],[2026,8]]; // 7月,8月,9月
+  const months=[[today.getFullYear(),today.getMonth()]]; // 只显示当前月
   const wd=['日','一','二','三','四','五','六'];
   months.forEach(([y,m])=>{
     const first=new Date(y,m,1), days=new Date(y,m+1,0).getDate();
@@ -1105,7 +1215,7 @@ async function renderCal(){
 
   // legend
   const lg=document.getElementById('calLegend');
-  lg.innerHTML=PHASES.map(p=>`<span class="lg"><span class="sw" style="background:${p.color}"></span>${p.book}</span>`).join('')
+  lg.innerHTML=orderedPhases().map(p=>`<span class="lg"><span class="sw" style="background:${p.color}"></span>${p.book}</span>`).join('')
     +`<span class="lg"><span class="dt" style="background:var(--pine)"></span>有记录</span>`
     +`<span class="lg"><span class="dt" style="background:var(--amber)"></span>有复盘</span>`;
 }
@@ -1150,7 +1260,12 @@ function todaySummary(){
 }
 function celebrateAllDone(){
   confettiRain();
-  toast('今天全部完成 🎉', todaySummary());
+  const cheer=pickLine(HER.cheer);
+  const s=pickLine(HER.songs,TK);   // 当天固定一首
+  let body=todaySummary();
+  if(cheer) body+='<br><span style="color:var(--pink-deep)">'+cheer+'</span>';
+  if(s) body+='<br><span style="color:var(--muted)">🎧 今天的歌 · '+s.t+' — '+s.a+'</span>';
+  toast('今天全部完成 🎉', body, 6200);
 }
 
 /* ---------- 特殊日子 & 月末彩蛋 ---------- */
@@ -1221,11 +1336,13 @@ document.getElementById('signupBtn').onclick=async()=>{
   catch(e){ fbMsg(fbErrText(e),'err'); }
 };
 document.getElementById('logoutBtn').onclick=async()=>{ try{ await firebase.auth().signOut(); }catch(e){} };
+document.getElementById('syncMini').onclick=()=>{ const c=document.getElementById('syncCard');
+  c.style.display=c.style.display==='none'?'block':'none'; };
 
 /* ---------- init ---------- */
 async function renderAll(){ await renderHeader(); renderToday(); }
 (async function(){
-  await loadDay(); await loadProg(); await loadEngProg(); await renderAll();
+  await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderAll();
   await refreshStreak(false);
   await checkSpecial();
   fbInit();
