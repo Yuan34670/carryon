@@ -497,11 +497,10 @@
         <button class="btn ghost" id="logoutBtn" style="margin-top:10px">退出</button>
       </div>
       <div id="loginBox">
-        <input id="fbEmail" class="fld" type="email" inputmode="email" placeholder="邮箱" autocomplete="username">
+        <input id="fbUser" class="fld" type="text" placeholder="用户名" autocomplete="username">
         <input id="fbPass" class="fld" type="password" placeholder="密码" autocomplete="current-password">
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn" id="loginBtn">登录</button>
-          <button class="btn ghost" id="signupBtn">注册</button>
+        <div style="margin-top:10px">
+          <button class="btn" id="loginBtn" style="width:100%">登录</button>
         </div>
         <div class="note" id="fbMsg" style="margin-top:8px"></div>
       </div>
@@ -527,9 +526,7 @@
   <button onclick="document.getElementById('overlay').classList.remove('show')">收下 ♡</button>
 </div></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.31.0/cloudbase.full.js"></script>
 <script>
 /* ---------- storage：localStorage 优先（可部署到任意服务器），失败退内存 ---------- */
 const _mem={};
@@ -546,18 +543,12 @@ const store={
     Object.keys(_mem).forEach(x=>{ if(x.startsWith(p)) out.add(x); }); return [...out]; }
 };
 
-/* ---------- ☁ Firebase 云同步 ---------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyDXe3MJYmUqB9_I0UZ7xGrd6x7NavOKbNc",
-  authDomain: "ledger-e9e40.firebaseapp.com",
-  projectId: "ledger-e9e40",
-  storageBucket: "ledger-e9e40.firebasestorage.app",
-  messagingSenderId: "1052446251359",
-  appId: "1:1052446251359:web:65a2bd87d939d6b512beea"
-};
-const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg','otherName','bookOrder'];
-const SYNC={ user:null, db:null, unsub:null, applying:false, timer:null,
-  ok(){ return typeof firebase!=='undefined' && this.db && this.user; },
+/* ---------- ☁ CloudBase（腾讯云开发）云同步 ---------- */
+const CB_ENV='kaoyan-d4gcb29x2bc25c241';
+let cbApp=null, cbAuth=null, cbDb=null;
+const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg','otherName','bookOrder','shownSongs'];
+const SYNC={ user:null, uid:null, applying:false, timer:null, watcher:null, _last:'',
+  ok(){ return cbDb && this.uid; },
   snapshot(){ const o={}; const ls=_ls();
     const take=k=>SYNC_PREFIXES.some(p=>k.startsWith(p));
     if(ls){ for(let i=0;i<ls.length;i++){ const k=ls.key(i); if(k&&take(k)){ try{o[k]=JSON.parse(ls.getItem(k));}catch(e){} } } }
@@ -568,27 +559,46 @@ const SYNC={ user:null, db:null, unsub:null, applying:false, timer:null,
     this.applying=false; },
   push(now){ if(!this.ok()) return; clearTimeout(this.timer);
     this.timer=setTimeout(async()=>{ try{
-      await this.db.collection('kaoyan').doc(this.user.uid).set({data:this.snapshot(),updatedAt:Date.now()});
+      const snap=this.snapshot(); this._last=JSON.stringify(snap);
+      await cbDb.collection('kaoyan').doc(this.uid).set({data:snap,updatedAt:Date.now()});
     }catch(e){ console.warn('云端写入失败',e); } }, now?0:800); },
-  attach(){ if(!this.db||!this.user) return;
-    const ref=this.db.collection('kaoyan').doc(this.user.uid);
-    this.unsub=ref.onSnapshot(snap=>{
-      if(!snap.exists){ this.push(true); return; }          // 云端空 → 首次上传本地
-      if(snap.metadata.hasPendingWrites) return;            // 自己刚写的，跳过
-      const d=snap.data(); if(d&&d.data){ this.apply(d.data); rerenderAll(); }
-    }, e=>console.warn('云同步监听失败',e)); },
-  detach(){ if(this.unsub){ this.unsub(); this.unsub=null; } }
+  async attach(){ if(!cbDb||!this.uid) return;
+    // 首次拉取：云端空 → 上传本地；有数据 → 合并应用
+    try{
+      const res=await cbDb.collection('kaoyan').doc(this.uid).get();
+      const docs=res&&res.data;
+      if(!docs||!docs.length){ this.push(true); }
+      else{ const d=docs[0]; if(d&&d.data){ this._last=JSON.stringify(d.data); this.apply(d.data); rerenderAll(); } }
+    }catch(e){ console.warn('拉取失败',e); this.push(true); }
+    // 实时监听
+    try{
+      this.watcher=cbDb.collection('kaoyan').doc(this.uid).watch({
+        onChange:(snap)=>{ if(this.applying) return;
+          const docs=snap&&snap.docs; if(!docs||!docs.length) return;
+          const d=docs[0]; if(!d||!d.data) return;
+          const inc=JSON.stringify(d.data); if(inc===this._last) return;   // 自己刚写的，跳过
+          this._last=inc; this.apply(d.data); rerenderAll(); },
+        onError:(e)=>console.warn('实时同步失败',e)
+      });
+    }catch(e){ console.warn('watch 失败',e); }
+  },
+  detach(){ if(this.watcher){ try{ this.watcher.close(); }catch(e){} this.watcher=null; } this.uid=null; this.user=null; }
 };
-function fbInit(){
-  if(typeof firebase==='undefined'){ return; }   // SDK 没加载（离线）→ 纯本地
+function cbUid(state){ try{
+  return (cbAuth&&cbAuth.currentUser&&cbAuth.currentUser.uid)
+      || (state&&state.user&&state.user.uid) || (state&&state.uid) || null;
+}catch(e){ return null; } }
+function cbInit(){
+  if(typeof cloudbase==='undefined'){ return; }   // SDK 没加载（离线）→ 纯本地
   try{
-    firebase.initializeApp(firebaseConfig);
-    SYNC.db=firebase.firestore();
-    firebase.auth().onAuthStateChanged(u=>{
-      SYNC.user=u; renderSyncUI();
-      if(u){ SYNC.attach(); } else { SYNC.detach(); }
-    });
-  }catch(e){ console.warn('Firebase 初始化失败',e); }
+    cbApp=cloudbase.init({ env:CB_ENV });
+    cbAuth=cbApp.auth();
+    cbDb=cbApp.database();
+    Promise.resolve(cbAuth.getLoginState()).then(state=>{
+      if(state){ SYNC.user=state; SYNC.uid=cbUid(state); renderSyncUI(); SYNC.attach(); }
+      else renderSyncUI();
+    }).catch(()=>renderSyncUI());
+  }catch(e){ console.warn('CloudBase 初始化失败',e); }
 }
 async function rerenderAll(){ await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderHeader(); renderToday();
   await refreshStreak(false);
@@ -1344,10 +1354,19 @@ function todaySummary(){
   if(day.csjText) parts.push(day.csjText);
   return parts.length?parts.join(' · '):'今天的任务全部完成';
 }
-function celebrateAllDone(){
+async function pickSongNoRepeat(){
+  const songs=HER.songs||[]; if(!songs.length) return null;
+  let shown=await store.get('shownSongs')||[];
+  let avail=songs.filter(s=>!shown.includes(s.t));
+  if(!avail.length){ shown=[]; avail=songs.slice(); }   // 全推过一轮 → 重置
+  const pick=avail[Math.floor(Math.random()*avail.length)];
+  shown.push(pick.t); await store.set('shownSongs',shown);
+  return pick;
+}
+async function celebrateAllDone(){
   confettiRain();
   const cheer=pickLine(HER.cheer);
-  const s=pickLine(HER.songs);   // 每次随机一首
+  const s=await pickSongNoRepeat();   // 不重复，直到全部推过再循环
   let body=todaySummary();
   if(cheer) body+='<br><span style="color:var(--pink-deep)">'+cheer+'</span>';
   if(s){ const intro=pickLine(HER.songIntro)||'今天的歌';
@@ -1401,28 +1420,25 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>switchTab(b.dat
 
 /* ---------- 云同步 登录/注册/退出 ---------- */
 function fbMsg(t,cls){ const m=document.getElementById('fbMsg'); m.textContent=t; m.className='note '+(cls||''); }
-function fbErrText(e){ const c=(e&&e.code)||''; 
-  if(c.includes('invalid-email')) return '邮箱格式不对';
-  if(c.includes('missing-password')||c.includes('weak-password')) return '密码至少 6 位';
-  if(c.includes('email-already-in-use')) return '这个邮箱已注册，直接点登录';
-  if(c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('user-not-found')) return '邮箱或密码不对';
-  if(c.includes('network')) return '网络不通，稍后再试';
-  return (e&&e.message)||'出错了'; }
+function cbErrText(e){ const c=(((e&&(e.code||e.error))||'')+'').toLowerCase(); const m=((e&&(e.message||e.msg))||'')+'';
+  if(c.includes('password')||m.includes('密码')) return '用户名或密码不对';
+  if((c.includes('user')&&c.includes('not'))||m.includes('不存在')) return '用户名或密码不对';
+  if(c.includes('permission')||m.includes('权限')) return '没权限（检查数据库集合权限）';
+  if(c.includes('network')||m.includes('网络')||m.includes('timeout')) return '网络不通，稍后再试';
+  if(c.includes('domain')||m.includes('域名')||m.includes('来源')) return '域名未加入白名单';
+  return m||c||'出错了'; }
 document.getElementById('loginBtn').onclick=async()=>{
-  if(typeof firebase==='undefined'){ fbMsg('同步组件没加载（可能断网）',' err'); return; }
-  const em=document.getElementById('fbEmail').value.trim(), pw=document.getElementById('fbPass').value;
+  if(typeof cloudbase==='undefined'||!cbAuth){ fbMsg('同步组件没加载（可能断网）','err'); return; }
+  const u=document.getElementById('fbUser').value.trim(), pw=document.getElementById('fbPass').value;
+  if(!u||!pw){ fbMsg('请输入用户名和密码','err'); return; }
   fbMsg('登录中…');
-  try{ await firebase.auth().signInWithEmailAndPassword(em,pw); fbMsg('登录成功，同步中 ✓','ok'); }
-  catch(e){ fbMsg(fbErrText(e),'err'); }
+  try{
+    const state=await cbAuth.signIn({username:u,password:pw});
+    SYNC.user=state||true; SYNC.uid=cbUid(state);
+    fbMsg('登录成功，同步中 ✓','ok'); renderSyncUI(); await SYNC.attach();
+  }catch(e){ console.warn(e); fbMsg(cbErrText(e),'err'); }
 };
-document.getElementById('signupBtn').onclick=async()=>{
-  if(typeof firebase==='undefined'){ fbMsg('同步组件没加载（可能断网）','err'); return; }
-  const em=document.getElementById('fbEmail').value.trim(), pw=document.getElementById('fbPass').value;
-  fbMsg('注册中…');
-  try{ await firebase.auth().createUserWithEmailAndPassword(em,pw); fbMsg('注册成功，已自动登录 ✓','ok'); }
-  catch(e){ fbMsg(fbErrText(e),'err'); }
-};
-document.getElementById('logoutBtn').onclick=async()=>{ try{ await firebase.auth().signOut(); }catch(e){} };
+document.getElementById('logoutBtn').onclick=async()=>{ try{ await cbAuth.signOut(); }catch(e){} SYNC.detach(); renderSyncUI(); };
 document.getElementById('syncMini').onclick=()=>{ const c=document.getElementById('syncCard');
   c.style.display=c.style.display==='none'?'block':'none'; };
 
@@ -1432,7 +1448,7 @@ async function renderAll(){ await renderHeader(); renderToday(); }
   await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderAll();
   await refreshStreak(false);
   await checkSpecial();
-  fbInit();
+  cbInit();
 })();
 </script>
 </body>
