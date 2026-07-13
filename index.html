@@ -927,9 +927,9 @@ async function moveBook(idx,dir){ const ord=curOrder(); const j=idx+dir;
 /* 英语进度：可数的四项，她自己 +/− 维护 */
 const ENG_ITEMS=[
   {key:'csj',name:'长难句',total:66,unit:'句',when:'每天 1 句'},
-  {key:'method',name:'阅读方法论',total:8,unit:'讲',when:'7/7–7/14'},
-  {key:'zt0409',name:'04–09 真题',total:8,unit:'篇',when:'7/15–7/22'},
-  {key:'zt1023',name:'10–23 真题',total:56,unit:'篇',when:'7/23–9/16'},
+  {key:'method',name:'阅读方法论',total:8,unit:'讲'},
+  {key:'zt0409',name:'04–09 真题',total:8,unit:'篇'},
+  {key:'zt1023',name:'10–23 真题',total:56,unit:'篇'},
   {key:'usbg',name:'美国文化背景',total:83,unit:'页',when:'灵活穿插'},
 ];
 const ENG_INIT={csj:1};   // 7/4 已完成长难句第 1 句
@@ -974,17 +974,38 @@ const ZYK={ // 每日专业课（暂定）
 '08-31':'广告 · 第九章 效果 + 第十章 管理 + 第十一章 素养',
 };
 
+/* 阅读排期：跳过每周一（周一不排阅读，内容顺延到周二，不会丢） */
+const READ_START='2026-07-07';
+function readIdx(dstr){            // 该日是第几个"阅读日"（0起）；周一/早于起始 → -1
+  const s=parse(READ_START), e=parse(dstr);
+  if(e<s) return -1;
+  if(e.getDay()===1) return -1;    // 周一：不安排阅读
+  let n=0; const c=new Date(s);
+  while(c<e){ if(c.getDay()!==1) n++; c.setDate(c.getDate()+1); }
+  return n;
+}
+function nthReadDay(n){            // 第 n 个阅读日（0起）是哪天，跳过周一
+  const c=parse(READ_START); let i=0;
+  while(true){ if(c.getDay()!==1){ if(i===n) return new Date(c); i++; } c.setDate(c.getDate()+1); }
+}
 function readingTask(d){
-  const dd=key(d);
-  if(parse(dd)<parse('2026-07-07')) return null;
-  const m=diffDays('2026-07-07',dd);          // 方法论从 7/7 起
-  if(m<8) return {main:'阅读方法论 第'+(m+1)+'讲',sub:'看视频 + 讲义，整理笔记'};   // 7/7–7/14
-  const b23=diffDays('2026-07-23',dd);
-  if(b23<0){ const n=m-8+1; return {main:'04–09 年真题 练手 第'+n+'篇',sub:'先做 → 看解析 → 没懂再看视频'}; } // 7/15–7/22
-  const idx=b23;                               // 英语二 56 篇从 7/23 起
+  const m=readIdx(key(d));
+  if(m<0) return null;                                   // 周一无阅读
+  if(m<8) return {main:'阅读方法论 第'+(m+1)+'讲',sub:'看视频 + 讲义，整理笔记'};
+  const n=m-8;
+  if(n<8) return {main:'04–09 年真题 练手 第'+(n+1)+'篇',sub:'先做 → 看解析 → 没懂再看视频'};
+  const idx=n-8;                                          // 英语二 56 篇
   if(idx>=0&&idx<56){ const yr=2010+Math.floor(idx/4), t=idx%4+1; return {main:'英语二 '+yr+'年 Text'+t,sub:'第'+(idx+1)+'/56 篇 · 先做 → 看解析 → 看视频'}; }
   return null;
 }
+/* 阅读三项的日期标签，按"跳过周一"自动算出来，和上面排期永远一致 */
+(function(){ const f=d=>(d.getMonth()+1)+'/'+d.getDate();
+  const span=(a,b)=>f(nthReadDay(a))+'–'+f(nthReadDay(b));
+  const g=k=>ENG_ITEMS.find(x=>x.key===k);
+  g('method').when=span(0,7);        // 方法论 8 讲
+  g('zt0409').when=span(8,15);       // 04–09 真题 8 篇
+  g('zt1023').when=span(16,71);      // 英语二 56 篇
+})();
 function csjTask(d){
   const dd=key(d);
   if(parse(dd)<parse('2026-07-01')) return null;
