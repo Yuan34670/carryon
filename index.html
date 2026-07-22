@@ -226,6 +226,17 @@
   .epg-name{font-weight:600;font-size:14px}
   .epg-name.done{color:#3f9078}
   .epg-when{font-size:11px;color:var(--muted);margin-left:8px}
+  .epg-when.editable,.ph-when.editable{cursor:pointer;border-bottom:1px dashed #E7D3DA}
+  .epg-when.editable:active,.ph-when.editable:active{color:var(--pink-deep)}
+  .ph-edited{font-family:var(--sans);font-size:9px;color:var(--pink-deep);background:#FCEBF1;border-radius:6px;padding:0 4px}
+  .date-edit{display:flex;flex-direction:column;gap:4px;width:134px;text-align:left}
+  .epg-edit{margin-left:8px}
+  .date-edit label{font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:1px}
+  .date-edit input[type=date]{font-size:12px;padding:3px 4px;border:1px solid var(--line);border-radius:7px;background:#fff;font-family:var(--mono)}
+  .de-btns{display:flex;gap:5px;margin-top:2px}
+  .de-btns button{flex:1;font-size:11px;padding:4px 0;border-radius:7px;border:1px solid var(--line);background:#FCFCFA}
+  .de-save{color:#fff!important;background:var(--pink)!important;border-color:var(--pink)!important}
+  .de-reset{color:var(--muted)}
   .epg-num{font-size:12.5px;color:var(--pink-deep);font-variant-numeric:tabular-nums;font-weight:600;margin-left:auto}
   .setting{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
   input[type=date]{font-family:var(--mono);border:1px solid var(--line);border-radius:9px;padding:6px 9px;color:var(--ink);background:#FCFCFA}
@@ -546,7 +557,7 @@ const store={
 /* ---------- ☁ CloudBase（腾讯云开发）云同步 ---------- */
 const CB_ENV='kaoyan-d4gcb29x2bc25c241';
 let cbApp=null, cbAuth=null, cbDb=null;
-const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg','otherName','bookOrder','shownSongs'];
+const SYNC_PREFIXES=['day:','review:','examDate','unlocked','seen-','bookProg','engProg','otherName','bookOrder','bookDates','engDates','shownSongs'];
 const SYNC={ user:null, uid:null, applying:false, timer:null, watcher:null, _last:'',
   ok(){ return cbDb && this.uid; },
   snapshot(){ const o={}; const ls=_ls();
@@ -600,7 +611,7 @@ function cbInit(){
     }).catch(()=>renderSyncUI());
   }catch(e){ console.warn('CloudBase 初始化失败',e); }
 }
-async function rerenderAll(){ await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderHeader(); renderToday();
+async function rerenderAll(){ await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await loadBookDates(); await loadEngDates(); await renderHeader(); renderToday();
   await refreshStreak(false);
   const on=document.querySelector('.view.on'); if(on){ const v=on.id.replace('view-',''); if(views[v]&&v!=='today') views[v](); } }
 function renderSyncUI(){
@@ -902,16 +913,21 @@ const TOTAL_SEC=101;
 const START_DATE='2026-07-01';
 const DEFAULT_ORDER=PHASES.map(p=>p.id);
 let BOOK_ORDER=[];
+let BOOK_DATES={};
 async function loadOrder(){ BOOK_ORDER=await store.get('bookOrder')||[]; }
 async function saveOrder(){ await store.set('bookOrder',BOOK_ORDER); }
+async function loadBookDates(){ BOOK_DATES=await store.get('bookDates')||{}; }
+async function saveBookDates(){ await store.set('bookDates',BOOK_DATES); }
 function curOrder(){ const ord=(BOOK_ORDER&&BOOK_ORDER.length?BOOK_ORDER:DEFAULT_ORDER).filter(id=>PHASES.some(p=>p.id===id));
   DEFAULT_ORDER.forEach(id=>{ if(!ord.includes(id)) ord.push(id); }); return ord; }
-/* 按当前顺序，从 7/1 起依次排出每本的起止日期 */
+/* 按当前顺序，从 7/1 起依次排出每本的起止日期；改过的用手动日期 */
 function orderedPhases(){ let cur=parse(START_DATE);
   return curOrder().map(id=>{ const p=PHASES.find(x=>x.id===id);
-    const s=new Date(cur), e=new Date(cur); e.setDate(e.getDate()+p.days-1);
+    const ov=BOOK_DATES[id]; let s,e,edited=false;
+    if(ov&&ov.start&&ov.end){ s=parse(ov.start); e=parse(ov.end); if(e<s) e=new Date(s); edited=true; }
+    else { s=new Date(cur); e=new Date(cur); e.setDate(e.getDate()+p.days-1); }
     cur=new Date(e); cur.setDate(cur.getDate()+1);
-    return Object.assign({},p,{start:key(s),end:key(e)}); }); }
+    return Object.assign({},p,{start:key(s),end:key(e),edited}); }); }
 /* 实际进度：每本已读章数（按书 id 存，排序不影响） */
 const INIT_PROG={cbx:10};   // 传播学默认已读 10（还剩 5）
 let BOOKPROG={};
@@ -1001,11 +1017,16 @@ function readingTask(d){
 /* 阅读三项的日期标签，按"跳过周一"自动算出来，和上面排期永远一致 */
 (function(){ const f=d=>(d.getMonth()+1)+'/'+d.getDate();
   const span=(a,b)=>f(nthReadDay(a))+'–'+f(nthReadDay(b));
+  const iso=n=>key(nthReadDay(n));
   const g=k=>ENG_ITEMS.find(x=>x.key===k);
-  g('method').when=span(0,7);        // 方法论 8 讲
-  g('zt0409').when=span(8,15);       // 04–09 真题 8 篇
-  g('zt1023').when=span(16,71);      // 英语二 56 篇
+  const set=(k,a,b)=>{ const it=g(k); it.when=span(a,b); it.autoStart=iso(a); it.autoEnd=iso(b); };
+  set('method',0,7);    // 方法论 8 讲
+  set('zt0409',8,15);   // 04–09 真题 8 篇
+  set('zt1023',16,71);  // 英语二 56 篇
 })();
+let ENG_DATES={};   // 手动改过的英语项日期 {key:{start,end}}
+async function loadEngDates(){ ENG_DATES=await store.get('engDates')||{}; }
+async function saveEngDates(){ await store.set('engDates',ENG_DATES); }
 function csjTask(d){
   const dd=key(d);
   if(parse(dd)<parse('2026-07-01')) return null;
@@ -1336,7 +1357,10 @@ function renderPlan(){
         <button class="pstep" data-op="1">+</button></div>
       <div class="pnum">已读 ${bdone}/${p.total}${left>0?' · 剩 '+left:' · 全部完成'}</div>
     </div>
-      <div class="ph-when${bdone>=p.total?' done':''}">${bdone>=p.total?'已读完':fmt(p.start)+'<br>–'+fmt(p.end)}</div>`;
+      <div class="ph-when${bdone>=p.total?' done':''}">${bdone>=p.total?'已读完':fmt(p.start)+'<br>–'+fmt(p.end)+(p.edited?'<br><span class="ph-edited">已改</span>':'')}</div>`;
+    if(bdone<p.total){ const when=el.querySelector('.ph-when');
+      when.classList.add('editable'); when.title='点这里改预计日期';
+      when.onclick=()=>openDateEdit(el,p); }
     const sl=el.querySelector('.pslider'); sliderFill(sl);
     sl.oninput=()=>sliderFill(sl);
     sl.onchange=async()=>{ const was=progOf(p.id), nv=+sl.value; await setProg(p.id,nv);
@@ -1352,13 +1376,32 @@ function renderPlan(){
   });
   renderEngProg();
 }
+function openDateEdit(el,p){
+  const when=el.querySelector('.ph-when'); when.onclick=null;
+  when.innerHTML=`<div class="date-edit">
+      <label>开始<input type="date" class="de-s" value="${p.start}"></label>
+      <label>结束<input type="date" class="de-e" value="${p.end}"></label>
+      <div class="de-btns"><button class="de-save">保存</button><button class="de-reset">默认</button></div>
+    </div>`;
+  const s=when.querySelector('.de-s'), e=when.querySelector('.de-e');
+  when.querySelector('.de-save').onclick=async(ev)=>{ ev.stopPropagation();
+    if(!s.value||!e.value){ return; }
+    let sv=s.value, ev2=e.value; if(parse(ev2)<parse(sv)) ev2=sv;
+    BOOK_DATES[p.id]={start:sv,end:ev2}; await saveBookDates(); renderPlan(); };
+  when.querySelector('.de-reset').onclick=async(ev)=>{ ev.stopPropagation();
+    delete BOOK_DATES[p.id]; await saveBookDates(); renderPlan(); };
+}
 function sliderFill(sl){ const pct=(+sl.value/(+sl.max||1))*100;
   sl.style.background=`linear-gradient(90deg,#F9BAD0 ${pct}%, #fff ${pct}%)`; }
+function engWhenTxt(it){ const ov=ENG_DATES[it.key];
+  const md=s=>{const[,m,d]=s.split('-');return +m+'/'+ +d;};
+  if(ov&&ov.start&&ov.end) return md(ov.start)+'–'+md(ov.end)+' <span class="ph-edited">已改</span>';
+  return it.when||''; }
 function renderEngProg(){
   const box=document.getElementById('engProgList'); if(!box) return; box.innerHTML='';
   ENG_ITEMS.forEach(it=>{ const done=engOf(it.key); const left=it.total-done;
     const el=document.createElement('div'); el.className='eng-prog';
-    el.innerHTML=`<div class="epg-top"><span class="epg-name${done>=it.total?' done':''}">${it.name}</span>${it.when?`<span class="epg-when">${it.when}</span>`:''}
+    el.innerHTML=`<div class="epg-top"><span class="epg-name${done>=it.total?' done':''}">${it.name}</span><span class="epg-when editable" title="点这里改日期">${engWhenTxt(it)}</span>
       <span class="epg-num">${done}/${it.total} ${it.unit}</span></div>
       <div class="prog-row"><button class="pstep" data-op="-1">−</button>
         <input type="range" class="pslider" min="0" max="${it.total}" value="${done}">
@@ -1373,8 +1416,27 @@ function renderEngProg(){
       const was=engOf(it.key), nv=was+ +b.dataset.op; await setEng(it.key, nv, it.total);
       if(was<it.total&&nv>=it.total) celebrateDone('完成一项 🎉', it.name+' 全部完成，太棒了 ♡');
       renderEngProg(); });
+    el.querySelector('.epg-when').onclick=()=>openEngDateEdit(el,it);
     box.appendChild(el);
   });
+}
+function openEngDateEdit(el,it){
+  const w=el.querySelector('.epg-when'); w.onclick=null;
+  const ov=ENG_DATES[it.key];
+  const st=(ov&&ov.start)||it.autoStart||'', en=(ov&&ov.end)||it.autoEnd||'';
+  w.outerHTML=`<div class="date-edit epg-edit">
+      <label>开始<input type="date" class="de-s" value="${st}"></label>
+      <label>结束<input type="date" class="de-e" value="${en}"></label>
+      <div class="de-btns"><button class="de-save">保存</button><button class="de-reset">默认</button></div>
+    </div>`;
+  const box=el.querySelector('.epg-edit');
+  const s=box.querySelector('.de-s'), e=box.querySelector('.de-e');
+  box.querySelector('.de-save').onclick=async(ev)=>{ ev.stopPropagation();
+    if(!s.value||!e.value){ return; }
+    let sv=s.value, ev2=e.value; if(parse(ev2)<parse(sv)) ev2=sv;
+    ENG_DATES[it.key]={start:sv,end:ev2}; await saveEngDates(); renderEngProg(); };
+  box.querySelector('.de-reset').onclick=async(ev)=>{ ev.stopPropagation();
+    delete ENG_DATES[it.key]; await saveEngDates(); renderEngProg(); };
 }
 
 /* ---------- calendar ---------- */
@@ -1572,7 +1634,7 @@ document.getElementById('syncMini').onclick=()=>{ const c=document.getElementByI
 /* ---------- init ---------- */
 async function renderAll(){ await renderHeader(); renderToday(); }
 (async function(){
-  await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await renderAll();
+  await loadDay(); await loadProg(); await loadEngProg(); await loadOther(); await loadOrder(); await loadBookDates(); await loadEngDates(); await renderAll();
   await refreshStreak(false);
   await checkSpecial();
   cbInit();
